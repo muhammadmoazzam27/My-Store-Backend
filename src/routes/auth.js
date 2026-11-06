@@ -43,4 +43,40 @@ router.post("/register", async (req, res) => {
 
 })
 
+
+router.post("/login", async (req, res) => {
+
+    try {
+
+        const { email, password } = req.body;
+
+        const user = await Users.findOne({ email })
+
+        if (!user) {
+            return res.status(404).json({ message: "Invalid email or password", isError: false, success: false })
+        }
+
+        const verifyPassword = await bcrypt.compare(password, user.password)
+
+        if (verifyPassword) {
+
+            const uid = user.uid;
+
+            const token = await jwt.sign({ uid }, `${process.env.JWT_SECRET_KEY}`, { expiresIn: "2h" })
+
+            return res.status(200).json({ message: "A user successfully login", success: true, isError: false, token })
+
+        }
+
+        return res.status(401).json({ message: "Invalid email or password", isError: true, success: false })
+
+    }
+    catch (error) {
+        console.error("Server Error ", error);
+        return res.status(500).json({ message: "Something went wrong", isError: true, success: false })
+    }
+
+})
+
+
 module.exports = router;
