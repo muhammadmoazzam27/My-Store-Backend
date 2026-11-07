@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Users } = require("../models/auth");
 const { isValidEmail, getRandomId } = require("../utils/global");
+const { verifyToken } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
@@ -69,6 +70,28 @@ router.post("/login", async (req, res) => {
         }
 
         return res.status(401).json({ message: "Invalid email or password", isError: true, success: false })
+
+    }
+    catch (error) {
+        console.error("Server Error ", error);
+        return res.status(500).json({ message: "Something went wrong", isError: true, success: false })
+    }
+
+})
+
+router.get("/get/user", verifyToken, async (req, res) => {
+
+    try {
+
+        const uid = req.uid;
+
+        const user = await Users.findOne({ uid }).select("-password")
+
+        if (!user) {
+            return res.status(404).json({ message: "Invalid email or password", success: false, isError: true })
+        }
+
+        return res.status(200).json({ message: "login successful", success: true, isError: false, user })
 
     }
     catch (error) {
