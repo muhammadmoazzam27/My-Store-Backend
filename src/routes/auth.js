@@ -15,13 +15,13 @@ router.post("/register", async (req, res) => {
         const { fullName, email, password } = req.body;
 
         if (fullName.length < 3 || fullName.trim() === "" || !isValidEmail(email) || password.length < 6 || password.trim() === "") {
-            return res.status(400).json({ message: "Please fill the all fields", isError: true, success: false })
+            return res.status(400).json({ message: "All fields are required!", isError: true, success: false })
         }
 
         const userFound = await Users.findOne({ email })
 
         if (userFound) {
-            return res.status(403).json({ message: "A user already exist" })
+            return res.status(403).json({ message: "A user already exist", success: false, isError: true })
         }
 
         const hashPassword = await bcrypt.hash(password, 10)
@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
         const user = await Users.findOne({ email })
 
         if (!user) {
-            return res.status(404).json({ message: "Invalid email or password", isError: false, success: false })
+            return res.status(404).json({ message: "Invalid email or password", isError: true, success: false })
         }
 
         const verifyPassword = await bcrypt.compare(password, user.password)
